@@ -1,3 +1,104 @@
 ustatusd
 
-This daemon provides ubus notifications on OpenWrt systems
+This daemon provides ubus notifications on OpenWrt systems. There is also a
+small cli tool that will show all notifications on stdout. Currently the
+following notifications are generated.
+
+* network
+  - 'network.link': {"ifname":"br-lan","carrier":0}	// carrier down
+  - 'network.link': {"ifname":"br-lan","carrier":1}	// carrier up
+
+* routing
+  - 'route.new': {"interface":"br-lan","dst":"192.168.1.0","netmask":24,"ipv4":1}
+  - 'route.new': {"interface":"br-lan","dst":"fdcf:244c:a484:0:0:0:0:0","netmask":64,"ipv6":1}
+  - 'route.del ': {"interface":"br-lan","dst":"192.168.1.0","netmask":24,"ipv4":1}
+  - 'route.del': {"interface":"br-lan","dst":"fdcf:244c:a484:0:0:0:0:0","netmask":64,"ipv6":1}
+
+* arp table
+  - 'neigh.enum': {"interface":"br-lan","mac":"00:18:84:88:00:03","ip":"192.168.1.248","ipv4":1}
+  - 'neigh.enum': {"interface":"br-lan","mac":"00:18:84:88:00:03","ip":"fdcf:244c:a484:0:4827:ea2c:64ad:0","ipv6":1}
+  - 'neigh.new': {"interface":"br-lan","mac":"00:18:84:88:00:03","ip":"192.168.1.248","ipv4":1}
+  - 'neigh.new': {"interface":"br-lan","mac":"00:18:84:88:00:03","ip":"fdcf:244c:a484:0:4827:ea2c:64ad:0","ipv6":1}
+  - 'neigh.del': {"interface":"br-lan","mac":"00:18:84:88:00:03","ip":"192.168.1.248","ipv4":1}
+  - 'neigh.del': {"interface":"br-lan","mac":"00:18:84:88:00:03","ip":"fdcf:244c:a484:0:4827:ea2c:64ad:0","ipv6":1}
+
+* bridge table
+  - 'bridge.mac.add': {"interface":"br-lan","mac":"00:18:84:88:00:02"}
+  - 'bridge.mac.del': {"interface":"br-lan","mac":"00:18:84:88:00:02"}
+
+* process monitoring
+  - 'proc.stat':
+	{"proc_stat":[
+		{"pid":1,"name":"\/sbin\/procd","fd":11,"mem":352256,"load":453},
+		{"pid":355,"name":"\/sbin\/ubusd","fd":17,"mem":176128,"load":12},
+		{"pid":356,"name":"\/bin\/ash","fd":4,"mem":167936,"load":1},
+		{"pid":675,"name":"\/sbin\/logd","fd":9,"mem":311296,"load":0},
+		{"pid":726,"name":"\/sbin\/netifd","fd":16,"mem":376832,"load":63},
+		{"pid":756,"name":"\/usr\/sbin\/odhcpd","fd":17,"mem":290816,"load":7},
+		{"pid":801,"name":"\/sbin\/ustatusd","fd":13,"mem":356352,"load":2823},
+		{"pid":910,"name":"odhcp6c","fd":11,"mem":167936,"load":2},
+		{"pid":927,"name":"\/usr\/sbin\/ntpd","fd":4,"mem":163840,"load":23},
+		{"pid":1063,"name":"\/usr\/sbin\/dropbear","fd":6,"mem":163840,"load":0},
+		{"pid":1235,"name":"ustatus","fd":7,"mem":319488,"load":4},
+		{"pid":1626,"name":"\/usr\/sbin\/dnsmasq","fd":30,"mem":270336,"load":6},
+		{"pid":1628,"name":"\/usr\/sbin\/hostapd","fd":22,"mem":294912,"load":0}
+	]}
+
+* wifi
+  - 'wifi.add.iface': {"mac":"00:18:84:88:00:02","dbm":20,"iftype":"ap"}
+  - 'wifi.del.iface': {"mac":"00:18:84:88:00:02","dbm":20,"iftype":"ap"}
+  - 'wifi.new.station': {"mac":"00:18:84:88:00:03","interface":"wlan0"}
+  - 'wifi.del.station': {"mac":"00:18:84:88:00:03","interface":"wlan0","signal":200,"inactive":45670,"rx_pkt":500,"tx_pkt":157,
+		"rx_rate":{"bitrate":1000,"mhz":20},
+		"tx_rate":{"bitrate":19500,"ht":true,"mcs":true,"mhz":20},
+		"rx_bytes":36709,"tx_bytes":25033,"tx_retries":76,"tx_failed":20}
+  - 'wifi.status.station': {"mac":"00:18:84:88:00:03","interface":"wlan0","signal":202,"inactive":750,"rx_pkt":161,"tx_pkt":59,
+		"rx_rate":{"bitrate":1000,"mhz":20},
+		"tx_rate":{"bitrate":21700,"ht":true,"mcs":true,"mhz":20,"short_gi":true},
+		"rx_bytes":14413,"tx_bytes":9352,"tx_retries":39,"tx_failed":7}
+  - 'wifi.high.rssi': {"mac":"00:18:84:88:00:03","rssi":202}
+  - 'wifi.low.rssi': {"mac":"00:18:84:88:00:03","rssi":50}
+  - 'wifi.high.tx_rate': {"mac":"00:18:84:88:00:03","tx_rate":1440000}
+  - 'wifi.low.tx_rate': {"mac":"00:18:84:88:00:03","tx_rate":21700}
+  - 'wifi.rps': {"mac":"00:18:84:88:00:03","tx_retries":46}
+
+
+Additionally the cli will listen to the following notifications
+
+* procd
+  - 'service.start': {"service":"dnsmasq"}
+  - 'service.stop': {"service":"dnsmasq"}
+  - 'instance.start': {"service":"dnsmasq","instance":"cfg02411c"}
+  - 'instance.stop': {"service":"dnsmasq","instance":"cfg02411c"}
+  - 'instance.respawn': {"service":"dnsmasq","instance":"cfg02411c"}
+  - 'instance.fail': {"service":"dnsmasq","instance":"cfg02411c"}
+
+* dnsmasq
+  - 'dhcp.ack': {"mac":"00:18:84:88:00:03","ip":"192.168.1.248","name":"Galaxy-A3-2017"}
+  - 'dhcp.renew': {"mac":"00:18:84:88:00:03","ip":"192.168.1.248","name":"Galaxy-A3-2017"}
+  - 'dhcp.del': {"mac":"00:18:84:88:00:03","ip":"192.168.1.248","name":"Galaxy-A3-2017"}
+
+* hostapd
+  - 'probe': {"address":"00:18:84:88:00:03","target":"00:18:84:88:00:02","signal":-54,"freq":2462}
+  - 'auth': {"address":"00:18:84:88:00:03","target":"00:18:84:88:00:02","signal":-52,"freq":2462}
+  - 'assoc': {"address":"00:18:84:88:00:03","target":"00:18:84:88:00:02","signal":-52,"freq":2462}
+  - 'deauth': {"address":"00:18:84:88:00:03"}
+  - 'disassoc': {"address":"00:18:84:88:00:03"}
+  - 'key-mismatch': {"address":"00:18:84:88:00:03"}
+  - 'local-deauth': {"address":"00:18:84:88:00:03"}
+
+
+There is also a uci file that defines timeouts and thresholds
+
+cat /etc/config/ustatus
+config global
+	option rssi_low		40	// threshold for low rssi
+	option rssi_high	150	// threshold for high rssi
+	option tx_rate_low	64000	// threshold for low tx rates
+	option tx_rate_high	144400  // threshold for high tx rate
+	option tx_retries	10	// threshold for tx retrys
+	option station_status	5	// timeout for polling bssid rssi/rate/retry info
+	option station_poll	30	// timeout for wifi.status.station notifications
+
+
+
