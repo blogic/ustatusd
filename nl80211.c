@@ -112,21 +112,23 @@ static void nl80211_assoc_list(struct uloop_timeout *t)
 	struct nl_msg *msg;
 	int idx = if_nametoindex(wif->ifname);
 
+	/* schedule next poll before genl_send_and_recv - wif might be freed
+	 * afterwards
+	 */
+	uloop_timeout_set(t, config.station_poll * 1000);
+
 	msg = nlmsg_alloc();
 	if (!msg)
-		goto out;
+		return;
 
 	if (!genlmsg_put(msg, 0, 0, genl_ctrl_resolve(nl80211_status.sock, "nl80211"),
 			 0, NLM_F_DUMP, NL80211_CMD_GET_STATION, 0) ||
 		nla_put_u32(msg, NL80211_ATTR_IFINDEX, idx)) {
 		nlmsg_free(msg);
-		goto out;
+		return;
 	}
 
 	genl_send_and_recv(&nl80211_status, msg);
-
-out:
-	uloop_timeout_set(t, config.station_poll * 1000);
 }
 
 static void nl80211_parse_rateinfo(struct nlattr **ri, char *table)
